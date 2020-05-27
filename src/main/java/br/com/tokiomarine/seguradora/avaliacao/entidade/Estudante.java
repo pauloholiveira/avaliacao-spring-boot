@@ -6,12 +6,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
+import lombok.Data;
+
 @Entity
 //@Table(name = "customers")
+@Data
 public class Estudante {
 	@Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Integer id;// (chave com auto incremento)
+	private Long id;// (chave com auto incremento)
 	
 	@NotNull(message = "Nome é obrigatório")
 	private String nome;// (com validação para não nulo e mensagem: Nome é obrigatório)
