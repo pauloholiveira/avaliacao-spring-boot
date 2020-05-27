@@ -23,4 +23,9 @@ public class Estudante {
 	private String email;// (com validação para não nulo e mensagem: Email é obrigatório)
 	
 	private String telefone;//telefone
+	
+	@NotNull(message = "Matrícula é obrigatória")
+	private String matricula;// (com validação para não nulo e mensagem: Matrícula é obrigatória)
+	
+	private String curso;
 }
