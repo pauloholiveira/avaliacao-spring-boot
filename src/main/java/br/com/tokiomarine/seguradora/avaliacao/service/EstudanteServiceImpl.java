@@ -4,12 +4,17 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
 import br.com.tokiomarine.seguradora.avaliacao.repository.EstudanteRepository;
 
 // TODO Efetue a implementação dos métodos da classe service
+@Service
 public class EstudanteServiceImpl implements EstudandeService {
 
+	@Autowired
 	EstudanteRepository repository;
 
 	@Override
