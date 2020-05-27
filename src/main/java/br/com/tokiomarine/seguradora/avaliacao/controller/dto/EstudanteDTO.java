@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.hateoas.ResourceSupport;
 
+import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+@NoArgsConstructor @AllArgsConstructor
 @Data
-@NoArgsConstructor
-public final class EstudanteDTO{
+@EqualsAndHashCode(callSuper = true)
+public final class EstudanteDTO  extends ResourceSupport{
 	
-	private Long id;
+	private Long ID;
 	private String nome;
 	private String email;// (com validação para não nulo e mensagem: Email é obrigatório)
 	private String telefone;//telefone
@@ -21,7 +25,7 @@ public final class EstudanteDTO{
 
 	public EstudanteDTO(final Estudante e) {
 		if(e != null) {
-			this.id = e.getId();
+			this.ID = e.getId();
 			this.nome = e.getNome();
 			this.email = e.getEmail();
 			this.telefone = e.getTelefone();
@@ -46,7 +50,7 @@ public final class EstudanteDTO{
 	public Estudante toEstudante() {
 		Estudante estudante = new Estudante();
 		
-		estudante.setId(this.id);
+		estudante.setId(this.ID);
 		estudante.setNome(this.nome);
 		estudante.setEmail(this.email);
 		estudante.setTelefone(this.telefone);
