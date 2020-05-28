@@ -34,7 +34,7 @@ public class EstudanteServiceImpl implements EstudandeService {
 	@Override
 	public Estudante atualizarEstudante(@Valid Estudante estudante) throws EstudanteNaoEncontradoEX	 {
 		if(!repository.findById(estudante.getId()).isPresent()) {
-			throw new EstudanteNaoEncontradoEX("Estudando não encontrado");
+			throw new EstudanteNaoEncontradoEX("Estudante não encontrado");
 		}
 		
 		return repository.save(estudante);
