@@ -3,7 +3,11 @@ package br.com.tokiomarine.seguradora.avaliacao.controller;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -12,7 +16,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.tokiomarine.seguradora.avaliacao.controller.dto.EstudanteDTO;
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
+import br.com.tokiomarine.seguradora.avaliacao.error.ErrorCodes;
+import br.com.tokiomarine.seguradora.avaliacao.error.EstudantesError;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteJaCadastradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.service.EstudandeService;
 
@@ -66,7 +76,7 @@ public class EstudanteRestController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Resource<EstudanteDTO>> inserirEstudante(@RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+	public ResponseEntity<Resource<EstudanteDTO>> inserirEstudante(@Valid @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX, EstudanteJaCadastradoEX {
 		Estudante inserido = estudanteService.cadastrarEstudante(estudanteDTO.toEstudante());
 		
 		Link selfLink = linkTo(methodOn(EstudanteRestController.class).obterEstudantePorID(inserido.getId())).withSelfRel();
@@ -77,7 +87,7 @@ public class EstudanteRestController {
 	
 	@PutMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<Resource<EstudanteDTO>> atualizarEstudante(@PathVariable(required = true) Long id, @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+	public ResponseEntity<Resource<EstudanteDTO>> atualizarEstudante(@PathVariable(required = true) Long id, @Valid @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		if(!id.equals(estudanteDTO.getID())) estudanteDTO.setID(id);
 		
 		Estudante atualizado = estudanteService.atualizarEstudante(estudanteDTO.toEstudante());
@@ -90,8 +100,24 @@ public class EstudanteRestController {
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void removerEstudante(@PathVariable(required = true) Long id, @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+	public void removerEstudante(@PathVariable(required = true) Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		
 		estudanteService.removerEstudante(id);
+	}
+	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<EstudantesError> handleValidationExceptions(MethodArgumentNotValidException ex) {
+		Map<String, String> errors = new HashMap<>();
+		ex.getBindingResult().getAllErrors().forEach(error -> {
+			String fieldName = ((FieldError) error).getField();
+			String errorMessage = error.getDefaultMessage();
+			errors.put(fieldName, errorMessage);
+		});
+
+		EstudantesError estudantesError = new EstudantesError(String.valueOf(ErrorCodes.ESTUDANTE_ID_INVALIDO.getHttpCode()),
+				ErrorCodes.ESTUDANTE_ID_INVALIDO.getCode(),
+				errors.toString());
+		
+		return new ResponseEntity<>(estudantesError, ErrorCodes.ESTUDANTE_ID_INVALIDO.getHttpCode());
 	}
 }
