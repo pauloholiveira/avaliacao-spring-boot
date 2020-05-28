@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteJaCadastradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.repository.EstudanteRepository;
 
@@ -20,8 +21,13 @@ public class EstudanteServiceImpl implements EstudandeService {
 	private EstudanteRepository repository;
 
 	@Override
-	public Estudante cadastrarEstudante(@Valid Estudante estudante) {
-		//TODO: ver a melhor de verificar se o estudante já existe.
+	public Estudante cadastrarEstudante(@Valid Estudante estudante) throws EstudanteJaCadastradoEX {
+		List<Estudante> jaExisteEmailMatricula = repository.findByEmailOrMatricula(estudante.getEmail(), estudante.getMatricula());
+		
+		if(jaExisteEmailMatricula != null && !jaExisteEmailMatricula.isEmpty()) {
+			throw new EstudanteJaCadastradoEX("Estudante já está cadastrado.");
+		}
+		
 		return repository.save(estudante);
 	}
 

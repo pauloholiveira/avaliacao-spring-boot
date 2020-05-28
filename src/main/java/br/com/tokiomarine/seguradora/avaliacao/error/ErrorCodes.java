@@ -5,8 +5,9 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCodes {
     ESTUDANTE_NAO_ENCONTRADO(HttpStatus.NOT_FOUND, "CEX-001"),
     ESTUDANTE_JA_CADASTRADO(HttpStatus.CONFLICT, "CEX-002"),
-    ESTUDANTE_ID_INVALIDO(HttpStatus.BAD_REQUEST, "CEX-003");
-
+    ESTUDANTE_ID_INVALIDO(HttpStatus.BAD_REQUEST, "CEX-003"),
+	REQUEST_VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "CEX-004");
+	
     private final HttpStatus httpCode;
     private final String code;
 

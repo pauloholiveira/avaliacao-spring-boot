@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import org.springframework.hateoas.ResourceSupport;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
@@ -11,16 +15,29 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
 @NoArgsConstructor @AllArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = true)
 public final class EstudanteDTO  extends ResourceSupport{
 	
 	private Long ID;
+	@NotNull(message = "Nome é obrigatório")
+	@NotBlank(message = "Nome é obrigatório")
+	@NotEmpty(message = "Nome é obrigatório")
 	private String nome;
+	
+	@NotNull(message = "Email é obrigatório")
+	@NotBlank(message = "Email é obrigatório")
+	@NotEmpty(message = "Email é obrigatório")
 	private String email;// (com validação para não nulo e mensagem: Email é obrigatório)
 	private String telefone;//telefone
+	
+	@NotNull(message = "Matrícula é obrigatória")
+	@NotBlank(message = "Matrícula é obrigatória")
+	@NotEmpty(message = "Matrícula é obrigatória")
 	private String matricula;// (com validação para não nulo e mensagem: Matrícula é obrigatória)
+	
 	private String curso;
 
 	public EstudanteDTO(final Estudante e) {

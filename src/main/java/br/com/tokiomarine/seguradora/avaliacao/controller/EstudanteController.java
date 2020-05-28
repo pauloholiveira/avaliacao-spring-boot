@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteJaCadastradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.service.EstudandeService;
 
@@ -20,24 +21,31 @@ import br.com.tokiomarine.seguradora.avaliacao.service.EstudandeService;
 @RequestMapping("/estudantes/")
 public class EstudanteController {
 
+	public static final String ATRIBUTO_LISTA_ESTUDANTES_NAME="estudantes";
+	public static final String ATRIBUTO_ESTUDANTE_NAME="estudante";
+	
+	public static final String PAGE_INDEX="index";
+	public static final String PAGE_CADASTRAR_ESTUDANTE="cadastrar-estudante";
+	public static final String PAGE_ATUALIZAR_ESTUDANTE="atualizar-estudante";
+	
 	@Autowired
 	private EstudandeService service;
 	
 	@GetMapping("criar")
 	public String iniciarCastrado(Estudante estudante) {
-		return "cadastrar-estudante";
+		return PAGE_CADASTRAR_ESTUDANTE;
 	}
 
 	@GetMapping("listar")
 	public String listarEstudantes(Model model) {
-		model.addAttribute("estudantes", service.buscarEstudantes());
-		return "index";
+		model.addAttribute(ATRIBUTO_LISTA_ESTUDANTES_NAME, service.buscarEstudantes());
+		return PAGE_INDEX;
 	}
 
 	@PostMapping("add")
-	public String adicionarEstudante(@Valid Estudante estudante, BindingResult result, Model model) {
+	public String adicionarEstudante(@Valid Estudante estudante, BindingResult result, Model model) throws EstudanteJaCadastradoEX {
 		if (result.hasErrors()) {
-			return "cadastrar-estudante";
+			return PAGE_CADASTRAR_ESTUDANTE;
 		}
 
 		service.cadastrarEstudante(estudante);
@@ -46,29 +54,32 @@ public class EstudanteController {
 	}
 
 	@GetMapping("editar/{id}")
-	public String exibirEdicaoEstudante(long id, Model model) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+	public String exibirEdicaoEstudante(@PathVariable("id") Long id, Model model) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		Estudante estudante = service.buscarEstudante(id);
-		model.addAttribute("estudante", estudante);
-		return "atualizar-estudante";
+		model.addAttribute(ATRIBUTO_ESTUDANTE_NAME, estudante);
+		return PAGE_ATUALIZAR_ESTUDANTE;
 	}
 
 	@PostMapping("atualizar/{id}")
-	public String atualizarEstudante(@PathVariable("id") long id, @Valid Estudante estudante, BindingResult result, Model model) throws EstudanteNaoEncontradoEX {
+	public String atualizarEstudante(@PathVariable("id") Long id, @Valid Estudante estudante, BindingResult result, Model model) throws EstudanteNaoEncontradoEX {
 		if (result.hasErrors()) {
-			// estudante.setId(id);
-			return "atualizar-estudante";
+			estudante.setId(id);
+			return PAGE_ATUALIZAR_ESTUDANTE;
 		}
 
 		service.atualizarEstudante(estudante);
 
-		model.addAttribute("estudantes", service.buscarEstudantes());
-		return "index";
+		model.addAttribute(ATRIBUTO_LISTA_ESTUDANTES_NAME, service.buscarEstudantes());
+		return PAGE_INDEX;
 	}
 
 	@GetMapping("apagar/{id}")
-	public String apagarEstudante(@PathVariable("id") long id, Model model) {
-		// TODO IMPLEMENTAR A EXCLUSAO DE ESTUDANTES
-		model.addAttribute("estudantes", service.buscarEstudantes());
-		return "index";
+	public String apagarEstudante(@PathVariable("id") Long id, Model model) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		
+		service.removerEstudante(id);
+		
+		model.addAttribute(ATRIBUTO_LISTA_ESTUDANTES_NAME, service.buscarEstudantes());
+		
+		return PAGE_INDEX;
 	}
 }
