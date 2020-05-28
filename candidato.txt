@@ -2,3 +2,22 @@ NOME: PAULO HENRIQUE DE OLIVEIRA
 EMAIL: pauloh2004@gmail.com
 CEL: 011 98244-6848
 
+CONSIDERACOES DO CANDIDATO
+
+Para fazer esta avaliação foquei mais na parte de BackEnd e REST que é onde tenho mais domínio.
+Porém, resolvi fazer também a parte do ThymeLeaf, pois, tenho também um pouco de conhecimento.
+
+REST: http://localhost:8081/api/estudantes
+
+TELAS: http://localhost:8081
+
+
+Possíveis Melhorias
+
+Estas melhorias não foram totalmente feitas ainda, mais por questão de tempo para entregar a avaliação.
+	
+* Finalizar melhorias no código com verificação no SonarQUBE e FindBugs.
+* Aprimorar os testes unitários.
+* Mensagens de Erros no ThymeLeaf.
+* Fazer a aplicação rodar em containers Docker
+* Alterar a base de dados para que não seja feita em memória
