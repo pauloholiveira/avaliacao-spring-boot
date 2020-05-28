@@ -9,22 +9,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.repository.EstudanteRepository;
 
-// TODO Efetue a implementação dos métodos da classe service
 @Service
 public class EstudanteServiceImpl implements EstudandeService {
 
 	@Autowired
-	EstudanteRepository repository;
+	private EstudanteRepository repository;
 
 	@Override
 	public Estudante cadastrarEstudante(@Valid Estudante estudante) {
+		//TODO: ver a melhor de verificar se o estudante já existe.
 		return repository.save(estudante);
 	}
 
 	@Override
-	public Estudante atualizarEstudante(@Valid Estudante estudante) {
+	public Estudante atualizarEstudante(@Valid Estudante estudante) throws EstudanteNaoEncontradoEX	 {
+		if(!repository.findById(estudante.getId()).isPresent()) {
+			throw new EstudanteNaoEncontradoEX("Estudando não encontrado");
+		}
+		
 		return repository.save(estudante);
 	}
 
@@ -34,19 +40,21 @@ public class EstudanteServiceImpl implements EstudandeService {
 	}
 
 	@Override
-	public Estudante buscarEstudante(Long id) {
-		if(id == null || id <=0) 	throw new IllegalArgumentException("Identificador inválido:" + id);
+	public Estudante buscarEstudante(Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		if(id == null || id <=0) 	throw new EstudanteIDInvalidoEX("Identificador inválido: " + id);
 		
 		Optional<Estudante> encontrado = repository.findById(id);
 		if(!encontrado.isPresent()) {
-			throw new IllegalArgumentException("Identificador inválido:" + id);
+			throw new EstudanteNaoEncontradoEX("Estudante ID: " + id + " não Encontrado.");
 		}
 		return encontrado.get();
 	}
 
 	@Override
-	public void removerEstudante(Long id) {
-		if(id == null || id <=0) 	throw new IllegalArgumentException("Identificador inválido:" + id);
+	public void removerEstudante(Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		if(id == null || id <=0) 	throw new IllegalArgumentException("Identificador inválido: " + id);
+		
+		buscarEstudante(id);
 		
 		repository.deleteById(id);
 	}

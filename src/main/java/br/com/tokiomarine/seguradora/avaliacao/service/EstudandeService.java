@@ -5,6 +5,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 
 public interface EstudandeService {
 
@@ -12,9 +14,9 @@ public interface EstudandeService {
 
 	Estudante cadastrarEstudante(@Valid Estudante estudante);
 
-	Estudante buscarEstudante(Long id);
+	Estudante buscarEstudante(Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX;
 
-	Estudante atualizarEstudante(@Valid Estudante estudante);
+	Estudante atualizarEstudante(@Valid Estudante estudante) throws EstudanteNaoEncontradoEX;
 	
-	void removerEstudante(Long id);
+	void removerEstudante(Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX;
 }

@@ -24,22 +24,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.tokiomarine.seguradora.avaliacao.controller.dto.EstudanteDTO;
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.service.EstudandeService;
 
-// TODO não esquecer de usar as anotações para criação do restcontroller
 @RestController
 @RequestMapping("/api/estudantes")
 @ExposesResourceFor(EstudanteDTO.class)
 public class EstudanteRestController {
 
-	// TODO caso você não conheça THEMELEAF faça a implementação dos métodos em forma de RESTCONTROLLER (seguindo o padrão RESTFUL)
 	@Autowired 
 	private EstudandeService estudanteService;
 	
-	// TODO IMPLEMENTAR A LISTAGEM DE ESTUDANTES (GET)
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<Resources<EstudanteDTO>> listarEstudantes() {
+	public ResponseEntity<Resources<EstudanteDTO>> listarEstudantes() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		List<EstudanteDTO> estudantesDTOs = EstudanteDTO.convert(estudanteService.buscarEstudantes());
 		
 		for (final EstudanteDTO estudanteDTO : estudantesDTOs) {
@@ -52,11 +51,10 @@ public class EstudanteRestController {
 		Resources<EstudanteDTO> respModel = new Resources<>(estudantesDTOs, link);
 		return new ResponseEntity<>(respModel, HttpStatus.OK);
 	}
-	
-	// Obtençao de um estudante específico.
+
 	@GetMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<Resource<EstudanteDTO>> obterEstudantePorID(@PathVariable(required = true) Long id) {
+	public ResponseEntity<Resource<EstudanteDTO>> obterEstudantePorID(@PathVariable(required = true) Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		Estudante encontrado = estudanteService.buscarEstudante(id);
 		EstudanteDTO estudanteDTO = new EstudanteDTO(encontrado);
 		
@@ -65,11 +63,10 @@ public class EstudanteRestController {
 		
 		return new ResponseEntity<> (entModel, HttpStatus.OK);
 	}
-	
-	// TODO IMPLEMENTAR CADASTRO DE ESTUDANTES (POST)
+
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Resource<EstudanteDTO>> inserirEstudante(@RequestBody EstudanteDTO estudanteDTO) {
+	public ResponseEntity<Resource<EstudanteDTO>> inserirEstudante(@RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		Estudante inserido = estudanteService.cadastrarEstudante(estudanteDTO.toEstudante());
 		
 		Link selfLink = linkTo(methodOn(EstudanteRestController.class).obterEstudantePorID(inserido.getId())).withSelfRel();
@@ -78,11 +75,10 @@ public class EstudanteRestController {
 		return new ResponseEntity<> (entModel, HttpStatus.CREATED);
 	}
 	
-	// TODO IMPLEMENTAR ATUALIZACAO DE ESTUDANTES (PUT)
 	@PutMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public ResponseEntity<Resource<EstudanteDTO>> atualizarEstudante(@PathVariable(required = true) Long id, @RequestBody EstudanteDTO estudanteDTO) {
-		if(id != estudanteDTO.getID()) estudanteDTO.setID(id);
+	public ResponseEntity<Resource<EstudanteDTO>> atualizarEstudante(@PathVariable(required = true) Long id, @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		if(!id.equals(estudanteDTO.getID())) estudanteDTO.setID(id);
 		
 		Estudante atualizado = estudanteService.atualizarEstudante(estudanteDTO.toEstudante());
 		
@@ -92,10 +88,9 @@ public class EstudanteRestController {
 		return new ResponseEntity<> (entModel, HttpStatus.OK);
 	}
 	
-	// TODO IMPLEMENTAR A EXCLUSÃO DE ESTUDANTES (DELETE)
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void removerEstudante(@PathVariable(required = true) Long id, @RequestBody EstudanteDTO estudanteDTO) {
+	public void removerEstudante(@PathVariable(required = true) Long id, @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		
 		estudanteService.removerEstudante(id);
 	}

@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
-import br.com.tokiomarine.seguradora.avaliacao.service.EstudanteServiceImpl;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
+import br.com.tokiomarine.seguradora.avaliacao.service.EstudandeService;
 
 @Controller
 @RequestMapping("/estudantes/")
 public class EstudanteController {
 
-	// TODO efetue a correção dos problemas que existem na classe Estudante Controller
 	@Autowired
-	//private EstudandeService service;
-	private EstudanteServiceImpl service;
-
+	private EstudandeService service;
+	
 	@GetMapping("criar")
 	public String iniciarCastrado(Estudante estudante) {
 		return "cadastrar-estudante";
@@ -30,7 +30,7 @@ public class EstudanteController {
 
 	@GetMapping("listar")
 	public String listarEstudantes(Model model) {
-		model.addAttribute("estudtes", service.buscarEstudantes());
+		model.addAttribute("estudantes", service.buscarEstudantes());
 		return "index";
 	}
 
@@ -46,14 +46,14 @@ public class EstudanteController {
 	}
 
 	@GetMapping("editar/{id}")
-	public String exibirEdicaoEstudante(long id, Model model) {
+	public String exibirEdicaoEstudante(long id, Model model) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		Estudante estudante = service.buscarEstudante(id);
 		model.addAttribute("estudante", estudante);
 		return "atualizar-estudante";
 	}
 
 	@PostMapping("atualizar/{id}")
-	public String atualizarEstudante(@PathVariable("id") long id, @Valid Estudante estudante, BindingResult result, Model model) {
+	public String atualizarEstudante(@PathVariable("id") long id, @Valid Estudante estudante, BindingResult result, Model model) throws EstudanteNaoEncontradoEX {
 		if (result.hasErrors()) {
 			// estudante.setId(id);
 			return "atualizar-estudante";
