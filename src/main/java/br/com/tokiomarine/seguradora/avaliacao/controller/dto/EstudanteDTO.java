@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public final class EstudanteDTO  extends ResourceSupport{
 	
-	private Long ID;
+	private Long idEstudante;
 	@NotNull(message = "Nome é obrigatório")
 	@NotBlank(message = "Nome é obrigatório")
 	@NotEmpty(message = "Nome é obrigatório")
@@ -42,13 +42,19 @@ public final class EstudanteDTO  extends ResourceSupport{
 
 	public EstudanteDTO(final Estudante e) {
 		if(e != null) {
-			this.ID = e.getId();
+			this.idEstudante = e.getId();
 			this.nome = e.getNome();
 			this.email = e.getEmail();
 			this.telefone = e.getTelefone();
 			this.matricula = e.getMatricula();
 			this.curso = e.getCurso();
+		} else {
+			this.nome = "";
+			this.email = "";
+			this.matricula = "";
 		}
+		
+		
 	}
 
 	public static List<EstudanteDTO> convert(Collection<Estudante> estudantes) {
@@ -67,7 +73,7 @@ public final class EstudanteDTO  extends ResourceSupport{
 	public Estudante toEstudante() {
 		Estudante estudante = new Estudante();
 		
-		estudante.setId(this.ID);
+		estudante.setId(this.idEstudante);
 		estudante.setNome(this.nome);
 		estudante.setEmail(this.email);
 		estudante.setTelefone(this.telefone);
