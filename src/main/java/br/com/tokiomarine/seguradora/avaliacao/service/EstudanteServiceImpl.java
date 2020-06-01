@@ -24,7 +24,7 @@ public class EstudanteServiceImpl implements EstudandeService {
 	public Estudante cadastrarEstudante(@Valid Estudante estudante) throws EstudanteJaCadastradoEX {
 		List<Estudante> jaExisteEmailMatricula = repository.findByEmailOrMatricula(estudante.getEmail(), estudante.getMatricula());
 		
-		if(jaExisteEmailMatricula != null && !jaExisteEmailMatricula.isEmpty()) {
+		if(!jaExisteEmailMatricula.isEmpty()) {
 			throw new EstudanteJaCadastradoEX("Estudante já está cadastrado.");
 		}
 		
@@ -58,7 +58,7 @@ public class EstudanteServiceImpl implements EstudandeService {
 
 	@Override
 	public void removerEstudante(Long id) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
-		if(id == null || id <=0) 	throw new IllegalArgumentException("Identificador inválido: " + id);
+		if(id == null || id <=0) 	throw new EstudanteIDInvalidoEX("Identificador inválido: " + id);
 		
 		buscarEstudante(id);
 		

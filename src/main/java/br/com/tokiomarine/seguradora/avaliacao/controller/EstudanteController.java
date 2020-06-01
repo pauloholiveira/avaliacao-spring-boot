@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import br.com.tokiomarine.seguradora.avaliacao.controller.dto.EstudanteDTO;
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteJaCadastradoEX;
@@ -32,7 +33,7 @@ public class EstudanteController {
 	private EstudandeService service;
 	
 	@GetMapping("criar")
-	public String iniciarCastrado(Estudante estudante) {
+	public String iniciarCastrado(EstudanteDTO estudante) {
 		return PAGE_CADASTRAR_ESTUDANTE;
 	}
 
@@ -43,12 +44,12 @@ public class EstudanteController {
 	}
 
 	@PostMapping("add")
-	public String adicionarEstudante(@Valid Estudante estudante, BindingResult result, Model model) throws EstudanteJaCadastradoEX {
+	public String adicionarEstudante(@Valid EstudanteDTO estudante, BindingResult result, Model model) throws EstudanteJaCadastradoEX {
 		if (result.hasErrors()) {
 			return PAGE_CADASTRAR_ESTUDANTE;
 		}
 
-		service.cadastrarEstudante(estudante);
+		service.cadastrarEstudante(estudante.toEstudante());
 
 		return "redirect:listar";
 	}
@@ -61,13 +62,13 @@ public class EstudanteController {
 	}
 
 	@PostMapping("atualizar/{id}")
-	public String atualizarEstudante(@PathVariable("id") Long id, @Valid Estudante estudante, BindingResult result, Model model) throws EstudanteNaoEncontradoEX {
+	public String atualizarEstudante(@PathVariable("id") Long id, @Valid EstudanteDTO estudante, BindingResult result, Model model) throws EstudanteNaoEncontradoEX {
 		if (result.hasErrors()) {
-			estudante.setId(id);
+			estudante.setIdEstudante(id);
 			return PAGE_ATUALIZAR_ESTUDANTE;
 		}
 
-		service.atualizarEstudante(estudante);
+		service.atualizarEstudante(estudante.toEstudante());
 
 		model.addAttribute(ATRIBUTO_LISTA_ESTUDANTES_NAME, service.buscarEstudantes());
 		return PAGE_INDEX;

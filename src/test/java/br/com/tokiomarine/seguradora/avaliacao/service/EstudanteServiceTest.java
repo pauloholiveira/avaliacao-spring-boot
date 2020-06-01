@@ -3,6 +3,7 @@ package br.com.tokiomarine.seguradora.avaliacao.service;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,24 +18,37 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import br.com.tokiomarine.seguradora.avaliacao.entidade.Estudante;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteIDInvalidoEX;
+import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteJaCadastradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.exception.EstudanteNaoEncontradoEX;
 import br.com.tokiomarine.seguradora.avaliacao.repository.EstudanteRepository;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
 public class EstudanteServiceTest {
 
-	@InjectMocks
-	EstudanteServiceImpl estudantesService;
-
-	@Mock
-	EstudanteRepository estudanteRepository;
+	@TestConfiguration
+    static class EmployeeServiceImplTestContextConfiguration {
+  
+        @Bean
+        public EstudandeService estudantesService() {
+            return new EstudanteServiceImpl();
+        }
+    }
+	
+	@Autowired
+    private EstudandeService estudantesService;
+	
+	@MockBean
+    private EstudanteRepository estudanteRepository;
 
 	@Rule
 	public ErrorCollector error = new ErrorCollector();
@@ -42,44 +56,48 @@ public class EstudanteServiceTest {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
+	 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 	}
 
 	@Test
-	public void testAtualizarEstudante() throws EstudanteNaoEncontradoEX {
-		//cenario
-		Estudante estudante1 = new Estudante(1L,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
-		Estudante estudanteAlterado = new Estudante(1L,"ESTUDANTE 1111", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
-		when(estudanteRepository.findById(estudanteAlterado.getId())).thenReturn(Optional.of(estudante1));
-		when(estudanteRepository.save(estudanteAlterado)).thenReturn(estudanteAlterado);
-		
-		
+	public void testCadastrarEstudante() throws EstudanteJaCadastradoEX {
+		//Cenario
+		Long id = 6L;
+		Estudante estudante = new Estudante(null,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+		Estudante estudanteSeraGravado = new Estudante(id,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+
+		when(estudanteRepository.save(estudante)).thenReturn(estudanteSeraGravado);
+
 		//Acao
-		Estudante resultado = estudantesService.atualizarEstudante(estudanteAlterado);
+		Estudante estudanteGravado = estudantesService.cadastrarEstudante(estudante);
 
-		//Checagem
-		error.checkThat(resultado.getEmail(), is(estudanteAlterado.getEmail()));
-		error.checkThat(resultado.getNome(), is(estudanteAlterado.getNome()));
-
-
+		//Verificao
+		verify(estudanteRepository).save(estudante);
+		assertThat(estudanteGravado, is(estudanteSeraGravado));
 	}
 
 	@Test
-	public void testAtualizarEstudante_ESTUDANTEINEXISTENTE() throws EstudanteNaoEncontradoEX {
-		//cenario
-		expectedException.expect(EstudanteNaoEncontradoEX.class);
-		expectedException.expectMessage("Estudante não encontrado");
+	public void testCadastrarEstudante_JAEXISTE() throws EstudanteJaCadastradoEX {
+		//Cenario
+		Long id = 1L;
+		Estudante estudante = new Estudante(null,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+		List<Estudante> estudantesJaExistentes = Collections.singletonList(new Estudante(id,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1"));
 
-		Estudante estudante1 = new Estudante(10L,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
-		when(estudanteRepository.findById(10L)).thenReturn(Optional.empty());
+		when(estudanteRepository.findByEmailOrMatricula(estudante.getEmail(), estudante.getMatricula())).thenReturn(estudantesJaExistentes);
+		expectedException.expect(EstudanteJaCadastradoEX.class);
+		expectedException.expectMessage("Estudante já está cadastrado.");
 
 		//Acao
-		estudantesService.atualizarEstudante(estudante1);
+		estudantesService.cadastrarEstudante(estudante);		
+
+		//Verificao
 
 	}
-	
+
+
 	@Test
 	public void testBuscarEstudantes() {
 		//Cenario
@@ -89,7 +107,6 @@ public class EstudanteServiceTest {
 				new Estudante(3L,"ESTUDANTE 3", "estudante3@gmail.com", "11999999999", "123458", "Curso 3"),
 				new Estudante(4L,"ESTUDANTE 4", "estudante4@gmail.com", "11999999999", "123459", "Curso 4")
 				);
-		//when(estudantesService.buscarEstudantes()).thenReturn(estudantesList);
 		when(estudanteRepository.findAll()).thenReturn(estudantesList);
 
 		//Acao
@@ -115,13 +132,14 @@ public class EstudanteServiceTest {
 		error.checkThat(retorno.isEmpty(), is(true));
 	}
 
+
 	@Test
 	public void testBuscarEstudante() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
 		//Cenario
 		Estudante estudante = new Estudante(1L,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
 
-		//when(estudantesService.buscarEstudante(1L)).thenReturn(estudante);
 		when(estudanteRepository.findById(1L)).thenReturn(Optional.of(estudante));
+
 		//Acao
 		Estudante retorno = estudantesService.buscarEstudante(1L);
 
@@ -137,7 +155,19 @@ public class EstudanteServiceTest {
 
 		expectedException.expect(EstudanteIDInvalidoEX.class);
 		expectedException.expectMessage("Identificador inválido: " + idUsuario);
-		
+
+		//Acao
+		estudantesService.buscarEstudante(idUsuario);
+	}
+
+	@Test
+	public void testBuscarEstudante_ID_NULL() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX  {
+		//Cenario
+		Long idUsuario = null;
+
+		expectedException.expect(EstudanteIDInvalidoEX.class);
+		expectedException.expectMessage("Identificador inválido: " + idUsuario);
+
 		//Acao
 		estudantesService.buscarEstudante(idUsuario);
 	}
@@ -150,11 +180,106 @@ public class EstudanteServiceTest {
 		expectedException.expect(EstudanteNaoEncontradoEX.class);
 		expectedException.expectMessage("Estudante ID: " + idUsuario + " não Encontrado.");
 
-		//when(estudantesService.buscarEstudante(idUsuario)).thenThrow(new EstudanteNaoEncontradoEX("Estudante ID: " + idUsuario + " não Encontrado."));
 		when(estudanteRepository.findById(idUsuario)).thenReturn(Optional.empty());
 
 		//Acao
 		estudantesService.buscarEstudante(idUsuario);
+
+		//Verificacao
+		verify(estudanteRepository).findById(idUsuario);
+	}
+
+
+	@Test
+	public void testAtualizarEstudante() throws EstudanteNaoEncontradoEX {
+		//cenario
+		Estudante estudante1 = new Estudante(1L,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+		Estudante estudanteAlterado = new Estudante(1L,"ESTUDANTE 1111", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+		when(estudanteRepository.findById(estudanteAlterado.getId())).thenReturn(Optional.of(estudante1));
+		when(estudanteRepository.save(estudanteAlterado)).thenReturn(estudanteAlterado);
+
+
+		//Acao
+		Estudante resultado = estudantesService.atualizarEstudante(estudanteAlterado);
+
+		//Checagem
+		verify(estudanteRepository).findById(estudanteAlterado.getId());
+		verify(estudanteRepository).save(estudanteAlterado);
+		error.checkThat(resultado.getEmail(), is(estudanteAlterado.getEmail()));
+		error.checkThat(resultado.getNome(), is(estudanteAlterado.getNome()));
+
+
+	}
+
+	@Test
+	public void testAtualizarEstudante_ESTUDANTEINEXISTENTE() throws EstudanteNaoEncontradoEX {
+		//cenario
+		Estudante estudante1 = new Estudante(10L,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+		when(estudanteRepository.findById(estudante1.getId())).thenReturn(Optional.empty());
+		expectedException.expect(EstudanteNaoEncontradoEX.class);
+		expectedException.expectMessage("Estudante não encontrado");
+
+		//Acao
+		estudantesService.atualizarEstudante(estudante1);
+
+		//Checagem
+		verify(estudanteRepository).findById(estudante1.getId());
+	}
+
+
+	@Test
+	public void testRemoverEstudante() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		//cenario
+		Estudante estudante1 = new Estudante(1L,"ESTUDANTE 1", "estudante1@gmail.com", "11999999999", "123456", "Curso 1");
+		when(estudanteRepository.findById(1L)).thenReturn(Optional.of(estudante1));
+
+		//Acao
+		estudantesService.removerEstudante(1L);
+
+		//verificacao
+		verify(estudanteRepository, times(1)).deleteById(1L);
+		ArgumentCaptor<Long> argCapture = ArgumentCaptor.forClass(Long.class);
+		verify(estudanteRepository).deleteById(argCapture.capture());
+		Long id = argCapture.getValue();
+		error.checkThat(id, is(1L));
+	}
+
+	@Test
+	public void testremoverEstudante_ESTUDANTENAOEXISTE() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		//cenario
+		Long id= 10L;
+
+		when(estudanteRepository.findById(id)).thenReturn(Optional.empty());
+		expectedException.expect(EstudanteNaoEncontradoEX.class);
+		expectedException.expectMessage("Estudante ID: " + id + " não Encontrado.");
+
+		//Acao
+		estudantesService.removerEstudante(id);
+
+		//verificacao
+		verify(estudanteRepository, times(1)).findById(id);
+	}
+
+	@Test
+	public void testremoverEstudante_IDNULL() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		//Cenario
+		Long id = null;
+		expectedException.expect(EstudanteIDInvalidoEX.class);
+		expectedException.expectMessage("Identificador inválido: " + id);
+
+		//Acao
+		estudantesService.removerEstudante(id);
+	}
+
+	@Test
+	public void testremoverEstudante_IDINVALIDO() throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
+		//Cenario
+		Long id = -10L;
+		expectedException.expect(EstudanteIDInvalidoEX.class);
+		expectedException.expectMessage("Identificador inválido: " + id);
+
+		//Acao
+		estudantesService.removerEstudante(id);
 	}
 
 }

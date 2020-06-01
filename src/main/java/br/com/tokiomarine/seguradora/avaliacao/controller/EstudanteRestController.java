@@ -52,7 +52,7 @@ public class EstudanteRestController {
 		List<EstudanteDTO> estudantesDTOs = EstudanteDTO.convert(estudanteService.buscarEstudantes());
 		
 		for (final EstudanteDTO estudanteDTO : estudantesDTOs) {
-			Link selfLink = linkTo(methodOn(EstudanteRestController.class).obterEstudantePorID(estudanteDTO.getID())).withSelfRel();
+			Link selfLink = linkTo(methodOn(EstudanteRestController.class).obterEstudantePorID(estudanteDTO.getIdEstudante())).withSelfRel();
 			estudanteDTO.add(selfLink);
 		}
 
@@ -88,7 +88,7 @@ public class EstudanteRestController {
 	@PutMapping("/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	public ResponseEntity<Resource<EstudanteDTO>> atualizarEstudante(@PathVariable(required = true) Long id, @Valid @RequestBody EstudanteDTO estudanteDTO) throws EstudanteIDInvalidoEX, EstudanteNaoEncontradoEX {
-		if(!id.equals(estudanteDTO.getID())) estudanteDTO.setID(id);
+		if(!id.equals(estudanteDTO.getIdEstudante())) estudanteDTO.setIdEstudante(id);
 		
 		Estudante atualizado = estudanteService.atualizarEstudante(estudanteDTO.toEstudante());
 		
